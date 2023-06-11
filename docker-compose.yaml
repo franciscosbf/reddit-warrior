@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    networks: 
+      - warrior
+    restart: unless-stopped
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: --label-enable --cleanup --interval 3600 
+  reddit-warrior:
+    container_name: reddit-warrior
+    image: atdr.meo.ws/archiveteam/reddit-grab
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    networks: 
+      - warrior
+    restart: unless-stopped
+    depends_on:
+      - watchtower
+    command: --concurrent ${CONCURRENT} ${USERNAME}
+
+networks:
+  warrior:
+    name: warrior
+    driver: bridge
