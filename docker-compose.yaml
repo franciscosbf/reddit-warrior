@@ -9,7 +9,16 @@ services:
     restart: unless-stopped
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    command: --label-enable --cleanup --interval 3600 
+    command: ["--label-enable", "--cleanup", "--interval", "3600"]
+  docker-cli:
+    container_name: docker-cli
+    image: docker:cli
+    networks: 
+      - warrior
+    restart: unless-stopped
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: ["/bin/sh", "-c", "while true; do sleep 30m; docker restart reddit-warrior; done"]
   reddit-warrior:
     container_name: reddit-warrior
     image: atdr.meo.ws/archiveteam/reddit-grab
@@ -20,7 +29,8 @@ services:
     restart: unless-stopped
     depends_on:
       - watchtower
-    command: --concurrent ${CONCURRENT} ${USERNAME}
+      - docker-cli
+    command: ["--concurrent", "${CONCURRENT}", "${USERNAME}"]
 
 networks:
   warrior:
